@@ -2,6 +2,9 @@ import numpy as np
 import glob
 import os
 import cv2
+import base64
+import zlib
+import cPickle as pickle
 import sklearn.cross_validation
 
 
@@ -33,10 +36,19 @@ class FrameFeature(Feature):
 
 class ClassifierFrameFeature(FrameFeature):
 
-    def __init__(self, classifier, feature, *args, **kw):
+    def __init__(self, classifier=None, feature=None, load_module=None, *args, **kw):
         super(ClassifierFrameFeature, self).__init__(*args, **kw)
-        self._classifier = classifier
-        self._feature = feature
+        if load_module is None:
+            self._classifier = classifier
+            self._feature = feature
+        else:
+            mod = __import__(load_module)
+            self._classifier, self._feature = mod.classifier, mod.feature
+
+    def save_module(self, output_path):
+        save_to_py(output_path,
+                   classifier=self._classifier,
+                   feature=self._feature)
 
     def train(self, label_frames):
         """Compute feature and train classifier
@@ -47,7 +59,8 @@ class ClassifierFrameFeature(FrameFeature):
         Return:
             Trained classifier
         """
-        return self._classifier.fit(*self._compute_features_labels(label_frames))
+        self._classifier.fit(*self._compute_features_labels(label_frames))
+        return self
 
     def _compute_features_labels(self, label_frames):
         labels = []
@@ -67,6 +80,10 @@ class ClassifierFrameFeature(FrameFeature):
             Trained classifier
         """
         return sklearn.cross_validation.cross_val_score(self._classifier, *self._compute_features_labels(label_frames))
+
+    def __call__(self, frame):
+        super(ClassifierFrameFeature, self).__call__(frame)
+        return np.array(self._classifier.predict(self._feature(frame)))
 
 
 class FrameRegionFeature(Feature):
@@ -129,6 +146,17 @@ def load_label_frames(path):
             yield label, cv2.imread(frame_fn, cv2.CV_LOAD_IMAGE_COLOR)
 
 
+def save_to_py(output_path, **kw):
+    with open(output_path, 'w') as fp:
+        fp.write('import zlib, base64, cPickle\n')
+        for name, val in kw.items():
+            fp.write(name)
+            fp.write(' = cPickle.loads(zlib.decompress(base64.b64decode("')
+            fp.write(base64.b64encode(zlib.compress(pickle.dumps(val, -1))))
+            fp.write('")))\n')
+
+
 from _synthetic import SyntheticFrameFeature
 from _blurry import BlurryFrameFeature
+
 

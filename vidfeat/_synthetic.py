@@ -2,20 +2,22 @@ import vidfeat
 import imfeat
 import sklearn.svm
 import kernels
+import random
 
 
 class SyntheticFrameFeature(vidfeat.ClassifierFrameFeature):
 
     def __init__(self, *args, **kw):
         feature = imfeat.MetaFeature(imfeat.GradientHistogram(), imfeat.Histogram('lab'))
-        classifier = sklearn.svm.SVC(kernel=kernels.histogram_intersection)
+        #classifier = sklearn.svm.SVC(kernel=kernels.histogram_intersection)
+        classifier = sklearn.svm.LinearSVC()
         super(SyntheticFrameFeature, self).__init__(classifier=classifier,
                                                     feature=feature,
                                                     *args, **kw)
-        #sklearn.svm.LinearSVC(),
 
 if __name__ == '__main__':
     data_root = '/home/brandyn/playground/synthetic_data'
-    #SyntheticFrameFeature().train(vidfeat.load_label_frames(data_root))
-    print(SyntheticFrameFeature().xval(vidfeat.load_label_frames(data_root)))
+    c = SyntheticFrameFeature().train(vidfeat.load_label_frames(data_root))
+    c.save_module('models/synthetic_frame_model0.py')
+
     
