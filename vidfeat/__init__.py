@@ -42,7 +42,7 @@ class ClassifierFrameFeature(FrameFeature):
             self._classifier = classifier
             self._feature = feature
         else:
-            mod = __import__(load_module)
+            mod = __import__(load_module, fromlist=['blah'])
             self._classifier, self._feature = mod.classifier, mod.feature
 
     def save_module(self, output_path):
