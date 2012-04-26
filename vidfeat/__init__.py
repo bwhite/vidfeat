@@ -19,14 +19,11 @@ class FrameFeature(Feature):
     def __init__(self, *args, **kw):
         super(FrameFeature, self).__init__(*args, **kw)
 
-    def __call__(self, frame):
+    def check_frame(self, frame):
         """Compute a feature on a single frame
 
         Args:
             frame: numpy array (height, width, 3) bgr with dtype=np.uint8
-             
-        Returns:
-            Numpy array of the feature with dtype=np.float64
         """
         assert isinstance(frame, np.ndarray)
         assert frame.ndim == 3
@@ -36,19 +33,20 @@ class FrameFeature(Feature):
 
 class ClassifierFrameFeature(FrameFeature):
 
-    def __init__(self, classifier=None, feature=None, load_module=None, *args, **kw):
+    def __init__(self, classifier=None, feature=None, load_module=None, binary=True,
+                 *args, **kw):
         super(ClassifierFrameFeature, self).__init__(*args, **kw)
+        self._binary = binary
+        self._feature = feature
         if load_module is None:
             self._classifier = classifier
-            self._feature = feature
         else:
             mod = __import__(load_module, fromlist=['blah'])
-            self._classifier, self._feature = mod.classifier, mod.feature
+            self._classifier = mod.classifier
 
     def save_module(self, output_path):
         save_to_py(output_path,
-                   classifier=self._classifier,
-                   feature=self._feature)
+                   classifier=self._classifier)
 
     def train(self, label_frames):
         """Compute feature and train classifier
@@ -82,8 +80,11 @@ class ClassifierFrameFeature(FrameFeature):
         return sklearn.cross_validation.cross_val_score(self._classifier, *self._compute_features_labels(label_frames))
 
     def __call__(self, frame):
-        super(ClassifierFrameFeature, self).__call__(frame)
-        return np.array(self._classifier.predict(self._feature(frame)))
+        super(ClassifierFrameFeature, self).check_frame(frame)
+        if self._binary:
+            return self._classifier.predict(self._feature(frame)) == 1
+        else:
+            return np.array(self._classifier.decision_function(self._feature(frame))[0])
 
 
 class FrameRegionFeature(Feature):
@@ -158,5 +159,9 @@ def save_to_py(output_path, **kw):
 
 from _synthetic import SyntheticFrameFeature
 from _blurry import BlurryFrameFeature
-
+from _boxed import BoxedFrameFeature
+from _horizontal_boxed import HorizontalBoxedFrameFeature
+from _vertical_boxed import VerticalBoxedFrameFeature
+from _visible_lens import VisibleLensFrameFeature
+import models
 

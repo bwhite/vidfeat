@@ -49,5 +49,9 @@ class Test(unittest.TestCase):
         import vidfeat
         vidfeat.SyntheticFrameFeature(load_module='vidfeat.models.synthetic_frame_model0')
 
+    def test_boxed(self):
+        import vidfeat
+        vidfeat.BoxedFrameFeature(load_module='vidfeat.models.boxed_frame_model0')
+
 if __name__ == '__main__':
     unittest.main()
