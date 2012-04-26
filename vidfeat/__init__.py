@@ -159,7 +159,6 @@ def save_to_py(output_path, **kw):
 
 from _synthetic import SyntheticFrameFeature
 from _blurry import BlurryFrameFeature
-from _boxed import BoxedFrameFeature
 from _horizontal_boxed import HorizontalBoxedFrameFeature
 from _vertical_boxed import VerticalBoxedFrameFeature
 from _visible_lens import VisibleLensFrameFeature
