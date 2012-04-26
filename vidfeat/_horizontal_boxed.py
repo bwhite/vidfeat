@@ -6,7 +6,7 @@ import sklearn.svm
 class HorizontalBoxedFrameFeature(vidfeat.ClassifierFrameFeature):
 
     def __init__(self, *args, **kw):
-        feature = imfeat.GridStats()
+        feature = imfeat.MetaFeature(imfeat.GridStats(), imfeat.Histogram('lab', num_bins=4))
         classifier = sklearn.svm.LinearSVC()
         super(HorizontalBoxedFrameFeature, self).__init__(classifier=classifier,
                                                           feature=feature,
