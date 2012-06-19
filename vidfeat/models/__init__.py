@@ -1,5 +1,0 @@
-import blurry_frame_model0
-import synthetic_frame_model0
-import horizontal_boxed_frame_model0
-import vertical_boxed_frame_model0
-import visible_lens_frame_model0

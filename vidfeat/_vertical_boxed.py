@@ -4,15 +4,17 @@ import sklearn.svm
 
 
 class VerticalBoxedFrameFeature(vidfeat.ClassifierFrameFeature):
+    feature = imfeat.BlackBars()
 
     def __init__(self, *args, **kw):
-        feature = imfeat.MetaFeature(imfeat.GridStats(), imfeat.Histogram('lab', num_bins=4))
-        classifier = sklearn.svm.LinearSVC()
+        classifier = sklearn.svm.LinearSVC(class_weight='auto')
+        self.svm_parameters = [{'C': [10 ** x for x in range(0, 12, 3)]}]
         super(VerticalBoxedFrameFeature, self).__init__(classifier=classifier,
-                                                          feature=feature,
-                                                          *args, **kw)
+                                                        *args, **kw)
+
+    def _feature(self, image):
+        return self.feature(image)
+
 
 if __name__ == '__main__':
-    data_root = '/home/brandyn/playground/vertical_boxed_data'
-    c = VerticalBoxedFrameFeature().train(vidfeat.load_label_frames(data_root))
-    c.save_module('models/vertical_boxed_frame_model0.py')
+    vidfeat._frame_feature_main('vertical_boxed', vidfeat.VerticalBoxedFrameFeature, remove_bars=True)

@@ -4,15 +4,18 @@ import sklearn.svm
 
 
 class HorizontalBoxedFrameFeature(vidfeat.ClassifierFrameFeature):
+    feature = imfeat.BlackBars()
 
     def __init__(self, *args, **kw):
-        feature = imfeat.MetaFeature(imfeat.GridStats(), imfeat.Histogram('lab', num_bins=4))
-        classifier = sklearn.svm.LinearSVC()
+        classifier = sklearn.svm.LinearSVC(class_weight='auto')
+        self.svm_parameters = [{'C': [10 ** x for x in range(0, 12, 3)]}]
         super(HorizontalBoxedFrameFeature, self).__init__(classifier=classifier,
-                                                          feature=feature,
                                                           *args, **kw)
+    def remove_bars(self, image):
+        pass
+
+    def _feature(self, image):
+        return self.feature(image)
 
 if __name__ == '__main__':
-    data_root = '/home/brandyn/playground/horizontal_boxed_data'
-    c = HorizontalBoxedFrameFeature().train(vidfeat.load_label_frames(data_root))
-    c.save_module('models/horizontal_boxed_frame_model0.py')
+    vidfeat._frame_feature_main('horizontal_boxed', vidfeat.HorizontalBoxedFrameFeature, remove_bars=False)

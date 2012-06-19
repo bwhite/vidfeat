@@ -6,14 +6,14 @@ from vidfeat.models.synthetic_bovw_clusters import clusters
 HOG = imfeat.HOGLatent(8, 2)
 
 
-class SyntheticFrameFeature(vidfeat.ClassifierFrameFeature):
+class FenceFrameFeature(vidfeat.ClassifierFrameFeature):
     #feature = imfeat.MetaFeature(imfeat.GradientHistogram(), imfeat.Histogram('lab'))
-    feature = imfeat.MetaFeature(imfeat.BoVW(lambda x: HOG.make_bow_mask(x, clusters), clusters.shape[0], 3), imfeat.Histogram('lab', num_bins=4), imfeat.UniqueColors())
+    feature = imfeat.MetaFeature(imfeat.BoVW(lambda x: HOG.make_bow_mask(x, clusters), clusters.shape[0], 3))
     
     def __init__(self, *args, **kw):
         classifier = sklearn.svm.LinearSVC(class_weight='auto')
         self.svm_parameters = [{'C': [10 ** x for x in range(0, 12, 3)]}]
-        super(SyntheticFrameFeature, self).__init__(classifier=classifier,
+        super(FenceFrameFeature, self).__init__(classifier=classifier,
                                                     *args, **kw)
 
     def _feature(self, image):
@@ -24,5 +24,5 @@ class SyntheticFrameFeature(vidfeat.ClassifierFrameFeature):
         return out
 
 if __name__ == '__main__':
-    vidfeat._frame_feature_main('synthetic', vidfeat.SyntheticFrameFeature)
+    vidfeat._frame_feature_main('fence', vidfeat.FenceFrameFeature)
 
